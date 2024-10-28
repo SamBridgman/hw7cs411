@@ -10,6 +10,15 @@ configure_logger(logger)
 def get_random() -> float:
     url = "https://www.random.org/decimal-fractions/?num=1&dec=2&col=1&format=plain&rnd=new"
 
+    """
+    fetches and returns a random decimal number from random.org
+    
+    Raises:
+        Value Error: invalid response from random.org
+        runtime Error: timed out request from random.org
+        runtime error: request from random.org failed
+    """
+
     try:
         # Log the request to random.org
         logger.info("Fetching random number from %s", url)
