@@ -2,6 +2,8 @@ from dataclasses import dataclass
 import logging
 import sqlite3
 from typing import Any
+from unittest.mock import patch, MagicMock
+
 
 from meal_max.utils.sql_utils import get_db_connection
 from meal_max.utils.logger import configure_logger
@@ -13,6 +15,19 @@ configure_logger(logger)
 
 @dataclass
 class Meal:
+
+    """
+    A class to manage meals
+
+
+    Attributes:
+        id (int): the id of the meal
+        meal (str): the name of the meal
+        cuisine (str): the name of the cuisine
+        price (float): the price of the meal
+        difficulty (str): the difficulty of the meal
+    """
+
     id: int
     meal: str
     cuisine: str
@@ -20,6 +35,11 @@ class Meal:
     difficulty: str
 
     def __post_init__(self):
+
+        """
+        After the class is intialized 
+        """
+
         if self.price < 0:
             raise ValueError("Price must be a positive value.")
         if self.difficulty not in ['LOW', 'MED', 'HIGH']:
@@ -27,6 +47,22 @@ class Meal:
 
 
 def create_meal(meal: str, cuisine: str, price: float, difficulty: str) -> None:
+
+    """
+    A function to create meals
+    
+    Args:
+        Meal (Str): name of the meal
+        cuisine (Str): Type of cuisine
+        Price (Float): Price of the meal
+        difficulty (Str): Difficulty of the meal
+
+    Raises:
+        Value Error: if the price is invalid
+        Value Error: if difficulty is invalid
+        Value Error: Meal name already exists
+    """
+
     if not isinstance(price, (int, float)) or price <= 0:
         raise ValueError(f"Invalid price: {price}. Price must be a positive number.")
     if difficulty not in ['LOW', 'MED', 'HIGH']:
@@ -53,6 +89,19 @@ def create_meal(meal: str, cuisine: str, price: float, difficulty: str) -> None:
 
 
 def delete_meal(meal_id: int) -> None:
+
+    """
+    A function to delete meals
+    
+    Args:
+        meal_id (int): ID of the meal
+
+    Raises:
+        Value Error: Meal is already deleted
+        Value Error: Meal ID is not found
+    
+    """
+
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
@@ -76,6 +125,18 @@ def delete_meal(meal_id: int) -> None:
         raise e
 
 def get_leaderboard(sort_by: str="wins") -> dict[str, Any]:
+
+
+    """
+    returns the leaderboard by a sort_by arg
+    
+    Args:
+        Sort_by (Str): what the function is sorting by
+
+    Raises:
+        Value Error: invalid sorting parameter
+    """
+
     query = """
         SELECT id, meal, cuisine, price, difficulty, battles, wins, (wins * 1.0 / battles) AS win_pct
         FROM meals WHERE deleted = false AND battles > 0
@@ -138,6 +199,18 @@ def get_meal_by_id(meal_id: int) -> Meal:
 
 
 def get_meal_by_name(meal_name: str) -> Meal:
+
+    """
+    returns the meal by name
+    
+    Args:
+        Meal_id (int): the meal id 
+
+    Raises:
+        Value Error: meal with the name has been deleted
+        value error: meal has not been found
+    """
+
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
@@ -159,6 +232,17 @@ def get_meal_by_name(meal_name: str) -> Meal:
 
 
 def update_meal_stats(meal_id: int, result: str) -> None:
+    """
+    updates the stats of a specific meal
+    
+    Args:
+        Meal_id (int): the meal id 
+        result (str): must be a win or lost
+
+    Raises:
+        Value Error: meal with the name has been deleted
+        value error: meal has not been found
+    """
     try:
         with get_db_connection() as conn:
             cursor = conn.cursor()
